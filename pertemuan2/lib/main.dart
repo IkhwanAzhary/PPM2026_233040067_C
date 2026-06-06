@@ -245,4 +245,4 @@ class _SectionCard extends StatelessWidget {
       ),
     );
   }
-};
+}
