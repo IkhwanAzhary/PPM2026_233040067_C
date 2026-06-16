@@ -17,10 +17,47 @@ class _ProfilePageState extends State<ProfilePage> {
   String _name = "Ikhwan Azhary";
   String _npm = "233040067";
   String _bio = "Saya mahasiswa semester 6 yang tertarik pada Flutter dan pengembangan aplikasi mobile. Hobi saya koding dan mengeksplorasi teknologi baru.";
+  String _education = "Teknik Informatika - Semester 6";
+  String _location = "Bandung, Jawa Barat";
+  String _contact = "ikhwanazhary9@gmail.com";
+  List<String> _skills = ["Flutter", "Dart", "Java", "Python", "Git", "Laravel", "Php"];
   Uint8List? _profileImageBytes;
 
   // Experience Data
   final List<ExperienceItem> _experiences = [];
+
+  Future<void> _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfilePage(
+          currentName: _name,
+          currentBio: _bio,
+          currentEducation: _education,
+          currentLocation: _location,
+          currentContact: _contact,
+          currentSkills: _skills.join(", "),
+          currentImageBytes: _profileImageBytes,
+        ),
+      ),
+    );
+
+    if (result != null && result is Map) {
+      setState(() {
+        _name = result['name'];
+        _bio = result['bio'];
+        _education = result['education'];
+        _location = result['location'];
+        _contact = result['contact'];
+        _skills = (result['skills'] as String)
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+        _profileImageBytes = result['image'];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +97,8 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.upload_file),
-              title: const Text("Upload Pengalaman"),
+              leading: const Icon(Icons.history_edu),
+              title: const Text("Tambah Pengalaman"),
               onTap: () async {
                 Navigator.pop(context);
                 final result = await Navigator.push(
@@ -146,17 +183,17 @@ class _ProfilePageState extends State<ProfilePage> {
               _buildSectionCard(
                 icon: Icons.school_outlined,
                 title: "Pendidikan",
-                content: "Teknik Informatika - Semester 6",
+                content: _education,
               ),
               _buildSectionCard(
                 icon: Icons.location_on_outlined,
                 title: "Lokasi",
-                content: "Bandung, Jawa Barat",
+                content: _location,
               ),
               _buildSectionCard(
                 icon: Icons.email_outlined,
                 title: "Kontak",
-                content: "ikhwanazhary9@gmail.com",
+                content: _contact,
               ),
 
               const SizedBox(height: 16),
@@ -172,7 +209,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
-                children: ["Flutter", "Dart", "Java", "Python", "Git", "Laravel", "Php"].map((skill) {
+                children: _skills.map((skill) {
                   return Chip(
                     label: Text(skill, style: const TextStyle(color: Colors.deepPurple)),
                     backgroundColor: Colors.deepPurple.shade50,
@@ -210,32 +247,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 )
               else
-                ..._experiences.map((exp) => _buildExperienceCard(exp)).toList(),
+                ..._experiences.asMap().entries.map((entry) {
+                  int idx = entry.key;
+                  ExperienceItem exp = entry.value;
+                  return _buildExperienceCard(exp, idx);
+                }),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditProfilePage(
-                currentName: _name,
-                currentBio: _bio,
-                currentImageBytes: _profileImageBytes,
-              ),
-            ),
-          );
-
-          if (result != null && result is Map) {
-            setState(() {
-              _name = result['name'];
-              _bio = result['bio'];
-              _profileImageBytes = result['image'];
-            });
-          }
-        },
+        onPressed: _navigateToEditProfile,
         icon: const Icon(Icons.edit),
         label: const Text("Edit Profil"),
         backgroundColor: Colors.deepPurple.shade50,
@@ -300,7 +322,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildExperienceCard(ExperienceItem exp) {
+  Widget _buildExperienceCard(ExperienceItem exp, int index) {
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -328,6 +350,22 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(exp.description, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UploadExperiencePage(item: exp),
+                  ),
+                );
+                if (result != null && result is ExperienceItem) {
+                  setState(() {
+                    _experiences[index] = result;
+                  });
+                }
+              },
             ),
           ],
         ),

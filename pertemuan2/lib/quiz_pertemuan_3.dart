@@ -43,12 +43,20 @@ class ExperienceItem {
 class EditProfilePage extends StatefulWidget {
   final String currentName;
   final String currentBio;
+  final String currentEducation;
+  final String currentLocation;
+  final String currentContact;
+  final String currentSkills;
   final Uint8List? currentImageBytes;
 
   const EditProfilePage({
     super.key,
     required this.currentName,
     required this.currentBio,
+    required this.currentEducation,
+    required this.currentLocation,
+    required this.currentContact,
+    required this.currentSkills,
     this.currentImageBytes,
   });
 
@@ -59,6 +67,10 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _nameController;
   late TextEditingController _bioController;
+  late TextEditingController _educationController;
+  late TextEditingController _locationController;
+  late TextEditingController _contactController;
+  late TextEditingController _skillsController;
   Uint8List? _selectedImageBytes;
 
   @override
@@ -66,6 +78,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.initState();
     _nameController = TextEditingController(text: widget.currentName);
     _bioController = TextEditingController(text: widget.currentBio);
+    _educationController = TextEditingController(text: widget.currentEducation);
+    _locationController = TextEditingController(text: widget.currentLocation);
+    _contactController = TextEditingController(text: widget.currentContact);
+    _skillsController = TextEditingController(text: widget.currentSkills);
     _selectedImageBytes = widget.currentImageBytes;
   }
 
@@ -125,6 +141,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Navigator.pop(context, {
                 'name': _nameController.text,
                 'bio': _bioController.text,
+                'education': _educationController.text,
+                'location': _locationController.text,
+                'contact': _contactController.text,
+                'skills': _skillsController.text,
                 'image': _selectedImageBytes,
               });
             },
@@ -191,6 +211,42 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _educationController,
+              decoration: const InputDecoration(
+                labelText: "Pendidikan",
+                prefixIcon: Icon(Icons.school_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                labelText: "Lokasi",
+                prefixIcon: Icon(Icons.location_on_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _contactController,
+              decoration: const InputDecoration(
+                labelText: "Kontak",
+                prefixIcon: Icon(Icons.email_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _skillsController,
+              decoration: const InputDecoration(
+                labelText: "Skills (pisahkan dengan koma)",
+                prefixIcon: Icon(Icons.star_outline),
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -204,6 +260,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   Navigator.pop(context, {
                     'name': _nameController.text,
                     'bio': _bioController.text,
+                    'education': _educationController.text,
+                    'location': _locationController.text,
+                    'contact': _contactController.text,
+                    'skills': _skillsController.text,
                     'image': _selectedImageBytes,
                   });
                 },
@@ -221,16 +281,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
 // =================== UPLOAD EXPERIENCE PAGE ===================
 
 class UploadExperiencePage extends StatefulWidget {
-  const UploadExperiencePage({super.key});
+  final ExperienceItem? item;
+
+  const UploadExperiencePage({super.key, this.item});
 
   @override
   State<UploadExperiencePage> createState() => _UploadExperiencePageState();
 }
 
 class _UploadExperiencePageState extends State<UploadExperiencePage> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _descController;
   Uint8List? _selectedImageBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.item?.title ?? "");
+    _descController = TextEditingController(text: widget.item?.description ?? "");
+    _selectedImageBytes = widget.item?.imageBytes;
+  }
 
   Future<void> _pickImage() async {
     showModalBottomSheet(
@@ -281,7 +351,7 @@ class _UploadExperiencePageState extends State<UploadExperiencePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Upload Pengalaman"),
+        title: Text(widget.item == null ? "Upload Pengalaman" : "Edit Pengalaman"),
         actions: [
           TextButton(
             onPressed: () {
@@ -370,7 +440,7 @@ class _UploadExperiencePageState extends State<UploadExperiencePage> {
                   }
                 },
                 icon: const Icon(Icons.save),
-                label: const Text("Simpan Pengalaman"),
+                label: Text(widget.item == null ? "Simpan Pengalaman" : "Update Pengalaman"),
               ),
             ),
           ],
